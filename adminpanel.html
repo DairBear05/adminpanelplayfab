@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>name of panel ADMIN PANEL</title>
+<script src="https://download.playfab.com/PlayFabClientApi.js"></script>
+<script src="https://download.playfab.com/PlayFabAdminApi.js"></script>
+<style>
+  body {
+    margin: 0;
+    background-color: #e4e9f2;
+    font-family: Verdana, Arial, sans-serif;
+    color: #000000;
+  }
+  #header {
+    background-color: #3366cc;
+    height: 60px;
+    padding: 10px 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 #000;
+  }
+  #nav {
+    background-color: #f2f2f2;
+    border-bottom: 2px solid #3366cc;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #3366cc;
+  }
+  #container {
+    width: 750px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border: 2px solid #3366cc;
+    padding: 15px 25px;
+    box-sizing: border-box;
+  }
+  h1 {
+    font-size: 20px;
+    color: #3366cc;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px #ccc;
+  }
+  h2 {
+    font-size: 16px;
+    color: #3366cc;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #3366cc;
+    padding-bottom: 3px;
+  }
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 5px;
+    border: 2px solid #3366cc;
+    font-size: 14px;
+    font-family: Verdana, Arial, sans-serif;
+    box-sizing: border-box;
+  }
+  input:disabled {
+    background-color: #e8e8e8;
+  }
+  button {
+    background-color: #3366cc;
+    color: white;
+    font-weight: bold;
+    border: 2px solid #2a52a3;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 14px;
+    box-shadow: none;
+    text-shadow: none;
+  }
+  button:hover {
+    background-color: #2a52a3;
+  }
+  pre {
+    background-color: #f7f7f7;
+    border: 1px solid #3366cc;
+    padding: 8px;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 13px;
+    color: #000;
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 12px;
+  }
+  table, th, td {
+    border: 1px solid #3366cc;
+  }
+  th {
+    background-color: #cce0ff;
+    color: #3366cc;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 6px;
+  }
+  td {
+    padding: 6px;
+    font-size: 13px;
+  }
+  label {
+    font-weight: bold;
+    font-size: 13px;
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+  <div id="header">name of panel ADMIN PANEL</div>
+  <div id="nav">Soon | Admin Tools | Soon | Soon</div>
+  <div id="container">
+    <h1>WELCOME TO THE add name of panel here ADMIN PANEL.</h1>
+
+    <h2>Setup</h2>
+    <input type="text" id="titleId" placeholder="Enter your PlayFab Title ID" value="add your title id here" />
+    <input type="text" id="secretKey" placeholder="Enter your PlayFab Secret Key" value="add your secret key here" />
+    <button onclick="initialize()">Initialize</button>
+
+    <h2>Get Title Data</h2>
+    <button onclick="getTitleData()">Fetch Title Data</button>
+    <pre id="titleDataResult"></pre>
+
+    <h2>Ban a Player</h2>
+    <input type="text" id="banPlayerId" placeholder="Enter Player ID (PlayFabId)" />
+    <label for="presetReason">Choose a reason:</label>
+    <select id="presetReason" onchange="onReasonChange()">
+      <option value="PLACEHOLDER">PLACEHOLDER</option>
+      <option value="PLACEHOLDER">PLACEHOLDER</option>
+      <option value="PLACEHOLDER">PLACEHOLDER</option>
+      <option value="PLACEHOLDER">PLACEHOLDER</option>
+      <option value="CUSTOM BAN MESSAGE">CUSTOM BAN MESSAGE...</option>
+    </select>
+    <input type="text" id="banReason" placeholder="Ban Reason" disabled />
+    <input type="number" id="banDurationHours" placeholder="Duration (hours, 0 = permanent)" min="0" />
+    <button onclick="banPlayer()">Ban Player</button>
+    <pre id="banResult"></pre>
+
+    <h2>Mod Ban History</h2>
+    <button onclick="loadBanHistory()">Refresh Log</button>
+    <table id="banHistoryTable">
+      <thead>
+        <tr>
+          <th>Player ID</th>
+          <th>Reason</th>
+          <th>Expires</th>
+          <th>Issued At</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+  let titleId = "add your title id here";
+  let secretKey = "add your secret key here";
+
+  function initialize() {
+    titleId = document.getElementById("titleId").value;
+    secretKey = document.getElementById("secretKey").value;
+    PlayFab.settings.titleId = titleId;
+    PlayFab.settings.developerSecretKey = secretKey;
+    alert("Initialized with Title ID: " + titleId);
+  }
+
+  function loginWithCustomID() {
+    const customId = document.getElementById("customId").value;
+    PlayFabClientSDK.LoginWithCustomID(
+      {
+        TitleId: titleId,
+        CustomId: customId,
+        CreateAccount: true,
+      },
+      (result) => {
+        alert("Login Successful: " + result.data.PlayFabId);
+      },
+      (error) => {
+        alert("Login Failed: " + error.errorMessage);
+      }
+    );
+  }
+
+  function getTitleData() {
+    PlayFabAdminSDK.GetTitleData(
+      {},
+      function (result) {
+        document.getElementById("titleDataResult").textContent = JSON.stringify(
+          result.data.Data,
+          null,
+          2
+        );
+      },
+      function (error) {
+        document.getElementById("titleDataResult").textContent =
+          "Error: " + error.errorMessage;
+      }
+    );
+  }
+
+  function onReasonChange() {
+    const preset = document.getElementById("presetReason").value;
+    const customInput = document.getElementById("banReason");
+
+    if (preset === "CUSTOM BAN MESSAGE") {
+      customInput.value = "";
+      customInput.disabled = false;
+      customInput.focus();
+    } else {
+      customInput.value = preset;
+      customInput.disabled = true;
+    }
+  }
+
+  function banPlayer() {
+    const playerId = document.getElementById("banPlayerId").value;
+    const reason = document.getElementById("banReason").value.trim();
+    const durationHours = parseInt(
+      document.getElementById("banDurationHours").value,
+      10
+    );
+
+    if (!playerId || !reason || isNaN(durationHours)) {
+      alert("Please enter Player ID, Reason, and Duration (in hours).");
+      return;
+    }
+
+    const now = new Date();
+    const expiry =
+      durationHours > 0
+        ? new Date(now.getTime() + durationHours * 3600 * 1000)
+        : null;
+    const expiryISO = expiry ? expiry.toISOString() : "Permanent";
+
+    const banRequest = {
+      Bans: [
+        {
+          PlayFabId: playerId,
+          Reason: reason,
+          DurationInSeconds: 0, // permanent as workaround
+        },
+      ],
+    };
+
+    PlayFabAdminSDK.BanUsers(
+      banRequest,
+      function (banResult) {
+        // Update user data for ban expiry
+        const dataRequest = {
+          PlayFabId: playerId,
+          Data: {
+            BanExpiresAt: expiry ? expiry.toISOString() : "",
+            BanReason: reason,
+          },
+        };
+
+        PlayFabAdminSDK.UpdateUserData(
+          dataRequest,
+          function () {
+            document.getElementById("banResult").textContent =
+              `Player Banned (expires at: ${expiryISO})`;
+
+            logBanToHistory(playerId, reason, expiryISO, now.toISOString());
+          },
+          function (err) {
+            document.getElementById("banResult").textContent =
+              `Ban set but failed to write user data: ${err.errorMessage}`;
+          }
+        );
+      },
+      function (error) {
+        document.getElementById("banResult").textContent =
+          `Ban Failed:\n${error.errorMessage}`;
+      }
+    );
+  }
+
+  function logBanToHistory(playerId, reason, expiresAt, issuedAt) {
+    PlayFabAdminSDK.GetTitleData(
+      {},
+      function (result) {
+        const currentHistoryRaw = result.data.Data.BanHistory || "[]";
+        let history = [];
+
+        try {
+          history = JSON.parse(currentHistoryRaw);
+        } catch (e) {
+          console.warn("Failed to parse BanHistory, starting fresh.");
+        }
+
+        const newEntry = {
+          PlayerId: playerId,
+          Reason: reason,
+          Expiry: expiresAt,
+          IssuedAt: issuedAt,
+        };
+
+        history.unshift(newEntry);
+
+        PlayFabAdminSDK.SetTitleData(
+          {
+            Key: "BanHistory",
+            Value: JSON.stringify(history),
+          },
+          function () {
+            loadBanHistory();
+          },
+          function (err) {
+            console.warn("Failed to update BanHistory:", err.errorMessage);
+          }
+        );
+      },
+      function (err) {
+        console.warn("Failed to get TitleData for BanHistory:", err.errorMessage);
+      }
+    );
+  }
+
+  function loadBanHistory() {
+    PlayFabAdminSDK.GetTitleData(
+      {},
+      function (result) {
+        const rawHistory = result.data.Data.BanHistory || "[]";
+        let history = [];
+
+        try {
+          history = JSON.parse(rawHistory);
+        } catch (e) {
+          console.warn("Failed to parse BanHistory:", e);
+        }
+
+        const tbody = document.querySelector("#banHistoryTable tbody");
+        tbody.innerHTML = "";
+
+        history.forEach((entry) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${entry.PlayerId}</td>
+            <td>${entry.Reason}</td>
+            <td>${entry.Expiry}</td>
+            <td>${entry.IssuedAt}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      },
+      function (err) {
+        alert("Failed to load ban history: " + err.errorMessage);
+      }
+    );
+  }
+
+  // Auto initialize on page load
+  window.onload = function () {
+    initialize();
+    loadBanHistory();
+    onReasonChange();
+  };
+</script>
+</body>
+</html>
